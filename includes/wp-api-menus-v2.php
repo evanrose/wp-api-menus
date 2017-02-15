@@ -105,6 +105,7 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
                 $menu = (array) $wp_menu;
 
                 $rest_menus[ $i ]                = $menu;
+
                 $rest_menus[ $i ]['ID']          = $menu['term_id'];
                 $rest_menus[ $i ]['name']        = $menu['name'];
                 $rest_menus[ $i ]['slug']        = $menu['slug'];
@@ -139,12 +140,18 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
 
             if ( $wp_menu_object ) :
 
+                $links_key = get_option( 'wpapimenu_links_key' );
+                $links_value = get_option( 'wpapimenu_links_value' );
+
                 $menu = (array) $wp_menu_object;
-                $rest_menu['ID']          = abs( $menu['term_id'] );
-                $rest_menu['name']        = $menu['name'];
-                $rest_menu['slug']        = $menu['slug'];
-                $rest_menu['description'] = $menu['description'];
-                $rest_menu['count']       = abs( $menu['count'] );
+                
+                $rest_menu['timestamp']   = abs( time()*1000 );
+                $rest_menu['links'][$links_key] = $links_value;
+                $rest_menu['data']['id']    = abs( $menu['term_id'] );
+                $rest_menu['data']['name']  = $menu['slug'];
+                $rest_menu['data']['count'] = abs( $menu['count'] );
+
+
 
                 $rest_menu_items = array();
                 foreach ( $wp_menu_items as $item_object ) {
@@ -153,9 +160,8 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
 
                 $rest_menu_items = $this->nested_menu_items($rest_menu_items, 0);
 
-                $rest_menu['items']                       = $rest_menu_items;
-                $rest_menu['meta']['links']['collection'] = $rest_url;
-                $rest_menu['meta']['links']['self']       = $rest_url . $id;
+                
+                $rest_menu['data']['items'] = $rest_menu_items;
 
             endif;
 
@@ -191,7 +197,7 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
             foreach ( $parents as &$parent ) {
 
                 if ( $this->has_children( $children, $parent['id'] ) ) {
-                    $parent['children'] = $this->nested_menu_items( $children, $parent['id'] );
+                    $parent['subitems'] = $this->nested_menu_items( $children, $parent['id'] );
                 }
             }
 
@@ -384,6 +390,7 @@ if ( ! class_exists( 'WP_REST_Menus' ) ) :
                 'object_id'   => abs( $item['object_id'] ),
                 'object'      => $item['object'],
                 'object_slug' => get_post( $item['object_id'] )->post_name,
+                'slug'        => get_post( $item['object_id'] )->post_name,
                 'type'        => $item['type'],
                 'type_label'  => $item['type_label'],
             );

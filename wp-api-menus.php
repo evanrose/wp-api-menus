@@ -34,6 +34,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
 }
 
+// Options
+include_once 'includes/wp-api-menus-settings.php';
+
 // WP API v1.
 include_once 'includes/wp-api-menus-v1.php';
 // WP API v2.
